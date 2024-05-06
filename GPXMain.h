@@ -26,6 +26,7 @@ __published:
 	TLabeledEdit *eHaversine;
 	TLabeledEdit *eEquirectangular;
 	TLabeledEdit *eSphericalLawOfCosines;
+	TLabeledEdit *eAltPlus;
 
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);

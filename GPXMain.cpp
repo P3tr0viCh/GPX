@@ -100,6 +100,7 @@ void ReadPoint(_di_IXMLNode XMLNode, TGPXPointDeg &GPXPointDeg,
 	TGPXPointRad &GPXPointRad) {
 	GPXPointDeg.Latitude = StrToFloat(XMLNode->Attributes["lat"]);
 	GPXPointDeg.Longitude = StrToFloat(XMLNode->Attributes["lon"]);
+	GPXPointDeg.Altitude = StrToFloat(XMLNode->ChildNodes->Nodes["ele"]->Text);
 
 	GPXPointRad = DegToRad(GPXPointDeg);
 }
@@ -115,6 +116,7 @@ void TMain::OpenGPXFile(String FileName) {
 	eHaversine->Text = "";
 	eEquirectangular->Text = "";
 	eSphericalLawOfCosines->Text = "";
+	eAltPlus->Text = "";
 
 	btnOpen->Enabled = false;
 
@@ -129,6 +131,8 @@ void TMain::OpenGPXFile(String FileName) {
 		IntervalSphericalLawOfCosines;
 	Extended DistanceHaversine = 0, DistanceEquirectangular = 0,
 		DistanceSphericalLawOfCosines = 0;
+
+	float altPlus = 0, altPlus2 = 0;
 
 	try {
 		StatusBar->SimpleText = FileName;
@@ -156,10 +160,20 @@ void TMain::OpenGPXFile(String FileName) {
 
 			ReadPoint(XMLNodeList->Nodes[0], PointDeg, PointRad1);
 
+			float alt1 = PointDeg.Altitude;
+			float alt2 = 0;
+
 			ListBox->Items->Add(IToS_0(1, MinLength) + ": " +
 				FToS(PointDeg.Latitude, 7) + ", " + FToS(PointDeg.Longitude,
-				7) + " | " + FToS(PointRad1.Latitude, 18) + ", " +
-				FToS(PointRad1.Longitude, 18));
+				7) + ", " + FToS(alt1, 1) + " | " + FToS(PointRad1.Latitude,
+				18) + ", " + FToS(PointRad1.Longitude, 18));
+
+			Extended distance = 0;
+			Extended distanceOver = 0;
+
+			float altSum = PointDeg.Altitude;
+			int altCount = 1;
+			float altAvg = 0, altAvg1 = PointDeg.Altitude, altAvg2 = 0;
 
 			for (int i = 1; i < XMLNodeList->Count; i++) {
 				PointRad2 = PointRad1;
@@ -175,13 +189,49 @@ void TMain::OpenGPXFile(String FileName) {
 				DistanceEquirectangular += IntervalEquirectangular;
 				DistanceSphericalLawOfCosines += IntervalSphericalLawOfCosines;
 
+				if (distance > 10) {
+					distanceOver = distance;
+					distance = 0;
+
+					altAvg = altSum / altCount;
+					altSum = 0;
+					altCount = 0;
+
+					altAvg2 = altAvg;
+					
+					if (altAvg2 > altAvg1) {
+						altPlus2 += (altAvg2 - altAvg1);
+					}
+
+					altAvg1 = altAvg2;
+				}
+				else {
+					distanceOver = 0;
+					distance += IntervalHaversine;
+
+					altSum += PointDeg.Altitude;
+					altCount++;
+				}
+
+				alt2 = PointDeg.Altitude;
+
+				if (alt2 > alt1) {
+					altPlus += (alt2 - alt1);
+				}
+
 				ListBox->Items->Add(IToS_0(i + 1, MinLength) + ": " +
 					FToS(PointDeg.Latitude, 7) + ", " + FToS(PointDeg.Longitude,
-					7) + " | " + FToS(PointRad1.Latitude, 18) + ", " +
+					7) + ", " + FToS(alt2, 1) + " (" + FToS(alt2 - alt1, 1) +
+					")" + " | " + FToS(PointRad1.Latitude, 18) + ", " +
 					FToS(PointRad1.Longitude, 18) + " >>> " +
 					FToS(IntervalHaversine, 2) + " | " +
 					FToS(IntervalEquirectangular, 2) + " | " +
-					FToS(IntervalSphericalLawOfCosines, 2));
+					FToS(IntervalSphericalLawOfCosines, 2) + " | " +
+					FToS(distanceOver, 2) + " | " + FToS(altAvg, 2));
+
+				altAvg = 0;
+
+				alt1 = alt2;
 
 				ProcMess();
 			}
@@ -190,6 +240,8 @@ void TMain::OpenGPXFile(String FileName) {
 			eEquirectangular->Text = FToS(DistanceEquirectangular / 1000, 3);
 			eSphericalLawOfCosines->Text =
 				FToS(DistanceSphericalLawOfCosines / 1000, 3);
+
+			eAltPlus->Text = FToS(altPlus, 1) + " | " + FToS(altPlus2, 1);
 		}
 		catch (Exception &E) {
 			ListBox->Items->Add("Error: " + E.Message);
@@ -208,7 +260,7 @@ void TMain::OpenGPXFile(String FileName) {
 }
 
 // ---------------------------------------------------------------------------
-void __fastcall TMain::FormKeyDown(TObject *Sender, WORD &Key,
+void __fastcall TMain::FormKeyDown(TObject * Sender, WORD & Key,
 	TShiftState Shift) {
 	if (Key == VK_F1) {
 		ShowAbout(24);
