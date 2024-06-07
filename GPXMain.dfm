@@ -2,7 +2,7 @@ object Main: TMain
   Left = 0
   Top = 0
   Caption = 'GPX'
-  ClientHeight = 379
+  ClientHeight = 554
   ClientWidth = 756
   Color = clBtnFace
   Constraints.MinHeight = 418
@@ -27,7 +27,6 @@ object Main: TMain
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 576
     DesignSize = (
       756
       48)
@@ -40,7 +39,6 @@ object Main: TMain
       Caption = #1047#1072#1082#1088#1099#1090#1100
       TabOrder = 0
       OnClick = btnCloseClick
-      ExplicitLeft = 488
     end
     object btnOpen: TButton
       Left = 8
@@ -54,7 +52,7 @@ object Main: TMain
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 355
+    Top = 530
     Width = 756
     Height = 24
     Font.Charset = DEFAULT_CHARSET
@@ -65,27 +63,26 @@ object Main: TMain
     Panels = <>
     SimplePanel = True
     UseSystemFont = False
-    ExplicitWidth = 576
+    ExplicitTop = 355
   end
   object ListBox: TListBox
     Left = 0
     Top = 48
     Width = 756
-    Height = 211
+    Height = 320
     Align = alClient
     ItemHeight = 17
     TabOrder = 2
-    ExplicitWidth = 576
+    ExplicitHeight = 273
   end
   object PanelBottom: TPanel
     Left = 0
-    Top = 259
+    Top = 368
     Width = 756
-    Height = 96
+    Height = 162
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 3
-    ExplicitWidth = 576
     object gbDistance: TGroupBox
       Left = 8
       Top = 8
@@ -141,6 +138,18 @@ object Main: TMain
       EditLabel.Caption = #1055#1086#1076#1098#1105#1084' '#1087#1086' Gpx.ele'
       ReadOnly = True
       TabOrder = 1
+    end
+    object eDuration: TLabeledEdit
+      Left = 15
+      Top = 120
+      Width = 121
+      Height = 25
+      Color = clBtnFace
+      EditLabel.Width = 82
+      EditLabel.Height = 17
+      EditLabel.Caption = #1044#1083#1080#1090#1077#1083#1100#1085#1086#1089#1090#1100
+      ReadOnly = True
+      TabOrder = 2
     end
   end
   object OpenDialog: TOpenDialog

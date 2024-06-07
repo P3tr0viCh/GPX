@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include <System.Math.hpp>
+#include <System.SysUtils.hpp>
 
 #include <Xml.XMLDoc.hpp>
 #include <Xml.xmldom.hpp>
@@ -13,6 +14,7 @@
 
 #include <UtilsGeo.h>
 #include <UtilsStr.h>
+#include <UtilsDate.h>
 #include <UtilsMisc.h>
 #include <UtilsKAndM.h>
 #include <UtilsFileIni.h>
@@ -132,7 +134,7 @@ void TMain::OpenGPXFile(String FileName) {
 	Extended DistanceHaversine = 0, DistanceEquirectangular = 0,
 		DistanceSphericalLawOfCosines = 0;
 
-	float altPlus = 0, altPlus2 = 0;
+	float altPlus = 0;
 
 	try {
 		StatusBar->SimpleText = FileName;
@@ -168,12 +170,7 @@ void TMain::OpenGPXFile(String FileName) {
 				7) + ", " + FToS(alt1, 1) + " | " + FToS(PointRad1.Latitude,
 				18) + ", " + FToS(PointRad1.Longitude, 18));
 
-			Extended distance = 0;
 			Extended distanceOver = 0;
-
-			float altSum = PointDeg.Altitude;
-			int altCount = 1;
-			float altAvg = 0, altAvg1 = PointDeg.Altitude, altAvg2 = 0;
 
 			for (int i = 1; i < XMLNodeList->Count; i++) {
 				PointRad2 = PointRad1;
@@ -189,30 +186,6 @@ void TMain::OpenGPXFile(String FileName) {
 				DistanceEquirectangular += IntervalEquirectangular;
 				DistanceSphericalLawOfCosines += IntervalSphericalLawOfCosines;
 
-				if (distance > 10) {
-					distanceOver = distance;
-					distance = 0;
-
-					altAvg = altSum / altCount;
-					altSum = 0;
-					altCount = 0;
-
-					altAvg2 = altAvg;
-					
-					if (altAvg2 > altAvg1) {
-						altPlus2 += (altAvg2 - altAvg1);
-					}
-
-					altAvg1 = altAvg2;
-				}
-				else {
-					distanceOver = 0;
-					distance += IntervalHaversine;
-
-					altSum += PointDeg.Altitude;
-					altCount++;
-				}
-
 				alt2 = PointDeg.Altitude;
 
 				if (alt2 > alt1) {
@@ -227,9 +200,7 @@ void TMain::OpenGPXFile(String FileName) {
 					FToS(IntervalHaversine, 2) + " | " +
 					FToS(IntervalEquirectangular, 2) + " | " +
 					FToS(IntervalSphericalLawOfCosines, 2) + " | " +
-					FToS(distanceOver, 2) + " | " + FToS(altAvg, 2));
-
-				altAvg = 0;
+					FToS(distanceOver, 2));
 
 				alt1 = alt2;
 
@@ -241,7 +212,20 @@ void TMain::OpenGPXFile(String FileName) {
 			eSphericalLawOfCosines->Text =
 				FToS(DistanceSphericalLawOfCosines / 1000, 3);
 
-			eAltPlus->Text = FToS(altPlus, 1) + " | " + FToS(altPlus2, 1);
+			eAltPlus->Text = FToS(altPlus, 1);
+
+			TDateTime dt1 =
+				StrToDateTime(XMLNodeList->Nodes[0]->ChildNodes->Nodes
+				["time"]->Text);
+
+			TFormatSettings fmt;
+			// 2024-04-14T05:25:11Z
+			fmt.ShortDateFormat = "yyyy-mm-dd";
+			fmt.DateSeparator = '-';
+			fmt.LongTimeFormat = "hh:nn:ss";
+			fmt.TimeSeparator = ':';
+
+			eDuration->Text = StrToDateTime(dt1, fmt);
 		}
 		catch (Exception &E) {
 			ListBox->Items->Add("Error: " + E.Message);
